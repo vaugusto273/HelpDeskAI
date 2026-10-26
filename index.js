@@ -1,61 +1,24 @@
-import 'dotenv/config'; // Carrega as variáveis do arquivo .env
 import Anthropic from '@anthropic-ai/sdk';
-import fs from 'fs';
-import readline from 'readline/promises'
+import { messageClaude, countTokens } from './AIAssist.js';
+import readline from 'readline/promises';
 
-// O SDK já vai puxar automaticamente o process.env.ANTHROPIC_API_KEY
-const anthropic = new Anthropic();
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
-})
-const contextVar = fs.readFileSync('context.md', 'utf-8');
-const instructionVar = fs.readFileSync('instrucoes.md', 'utf-8');
-var question = 'Eu sou um restaurante e quero saber se o sistema consegue auxiliar o artista do show ao vivo do meu restaurante através de uma votação feita dentro do Sirius pelos nossos clientes';
-
-const params = {
-    model: process.env.CLAUDE_MODEL_NAME,
-    max_tokens: 1024,
-    system: [{
-        type: "text",
-        text: `<base_de_conhecimento>\n${contextVar}</base_de_conhecimento>`,
-        cache_control: { type: "ephemeral", ttl: "1h" }
-    },
-    {
-        type: "text",
-        text: instructionVar,
-        cache_control: { type: "ephemeral", ttl: "1h" }
-    }],
-    messages: [{
-        role: 'user',
-        content: question
-    }]
-}
-
-async function countTokens(params) {
-    const { max_tokens, ...count } = params;
-    const r = await anthropic.messages.countTokens(count)
-    return r
-}
+});
 
 async function main() {
     try {
-        const totalTokens = await countTokens(params);
-        const r = await rl.question('Essa requisição ira custas ' + totalTokens.input_tokens + ' Deseja continua? (S/N)')
-        rl.close();
+        const r = await rl.question('Essa requisição ira custar ' + await countTokens(q) + ' Deseja continuar? (S/N)')
 
         if (r.trim().toUpperCase() !== 'S') {
             console.log('Pergunta cancelada');
             return;
         }
-        const message = await anthropic.messages.create(params);
 
-        const response = message.content
-            .filter(bloco => bloco.type === 'text')
-            .map(bloco => bloco.text)
-            .join('\n');
+        const { response, usage } = await messageClaude(q);
         console.log(response);
-        console.log(message.usage)
+        console.log(usage);
     } catch (error) {
         if (error instanceof Anthropic.AuthenticationError) {
             console.error('Chave da API inválida. Confira o ANTHROPIC_API_KEY no .env');
@@ -81,4 +44,4 @@ async function main() {
     }
 }
 
-main().catch(console.error);
+main()
