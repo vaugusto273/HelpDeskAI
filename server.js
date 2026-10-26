@@ -13,8 +13,8 @@ app.post('/askclaude', async (req, res) => {
         if (!q || !q.trim()) {
             return res.status(400).json({erro: 'Envie a pergunta no campo de perguntas'})
         }
-        const { response } = await messageClaude(req.body.q);
-        res.json({ response });
+        const { response, usage } = await messageClaude(req.body.q);
+        res.json({ response, usage });
     } catch (error) {
         console.error(error);
         res.status(500).json({ erro: 'Não foi possível responder agora.' });
@@ -22,7 +22,7 @@ app.post('/askclaude', async (req, res) => {
 });
 
 app.post('/review', async (req, res) => {
-    const { q, response, review, obs } = req.body ?? {};
+    const { q, response, review, obs, usage } = req.body ?? {};
 
     if (!q || !response) {
         return res.status(400).json({ erro: 'Faltou a pergunta ou a resposta' });
@@ -36,7 +36,8 @@ app.post('/review', async (req, res) => {
         q,
         response,
         review,
-        obs: obs ?? ''
+        obs: obs ?? '',
+        usage,
     };
 
     try {
