@@ -1,11 +1,14 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs';
+import path from 'path';
+import { CONTEXT, ENV } from './paths.js'
 
+dotenv.config({ path: ENV });
 const anthropic = new Anthropic();
 
-const contextVar = fs.readFileSync('context.md', 'utf-8');
-const instructionVar = fs.readFileSync('instrucoes.md', 'utf-8');
+const contextVar = fs.readFileSync(path.join(CONTEXT, 'context.md'),'utf-8');
+const instructionVar = fs.readFileSync(path.join(CONTEXT, 'instrucoes.md'), 'utf-8');
 
 function buildParam(q) {
     return {

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { messageClaude, countTokens } from './AIAssist.js';
+import { messageClaude, countTokens } from '../src/claude.js';
 import readline from 'readline/promises';
 
 const rl = readline.createInterface({
@@ -9,7 +9,13 @@ const rl = readline.createInterface({
 
 async function main() {
     try {
-        const r = await rl.question('Essa requisição ira custar ' + await countTokens(q) + ' Deseja continuar? (S/N)')
+        const q = (await rl.question('Pergunta: ')).trim();
+        if (!q) {
+            console.log('Nenhuma pergunta informada.');
+            return
+        }
+        
+        const r = await rl.question('Essa requisição ira custar ' + await countTokens(q) + ' tokens de entrada. Deseja continuar? (S/N)')
 
         if (r.trim().toUpperCase() !== 'S') {
             console.log('Pergunta cancelada');

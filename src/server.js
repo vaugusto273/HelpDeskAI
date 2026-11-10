@@ -1,17 +1,22 @@
 import express from 'express';
-import { messageClaude } from './AIAssist.js';
+import { messageClaude } from './claude.js';
 import fs from 'fs/promises'
+import path from 'path';
+import { DATA, FRONTEND } from './paths.js';
+
+const REVIEWS = path.join(DATA, 'reviews.jsonl');
+await fs.mkdir(DATA, { recursive: true });
 
 const app = express();
 app.use(express.json());
-app.use(express.static('../frontend'));
+app.use(express.static(FRONTEND));
 //app.use(express.static('public'));
 
 app.post('/askclaude', async (req, res) => {
     try {
         const q = req.body?.q;
         if (!q || !q.trim()) {
-            return res.status(400).json({erro: 'Envie a pergunta no campo de perguntas'})
+            return res.status(400).json({ erro: 'Envie a pergunta no campo de perguntas' })
         }
         const { response, usage } = await messageClaude(req.body.q);
         res.json({ response, usage });
@@ -49,4 +54,4 @@ app.post('/review', async (req, res) => {
     }
 });
 
-app.listen(3002, () => console.log('http://localhost:3002'))
+app.listen(8080, () => console.log('http://localhost:8080'))

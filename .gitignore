@@ -72,8 +72,10 @@ web_modules/
 !.env.example
 
 # Context file
-context.md
-instrucoes.md
+/context
+/docs
+/backup
+/data
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
