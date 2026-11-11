@@ -2,16 +2,17 @@
   "name": "helpdeskai",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "question": "node scripts/contar_token.js"
+    "question": "node scripts/contar_tokens.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
+    "csv-parse": "^7.0.3",
     "dotenv": "^18.0.8",
     "express": "^5.3.0"
   }

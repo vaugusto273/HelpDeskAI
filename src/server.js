@@ -46,7 +46,7 @@ app.post('/review', async (req, res) => {
     };
 
     try {
-        await fs.appendFile('reviews.jsonl', JSON.stringify(reg) + '\n', 'utf-8');
+        await fs.appendFile(REVIEWS, JSON.stringify(reg) + '\n', 'utf-8');
         res.status(201).json({ ok: true });
     } catch (error) {
         console.error(error);
