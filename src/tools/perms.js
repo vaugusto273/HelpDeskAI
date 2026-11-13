@@ -1,23 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import { CONTEXT } from '../paths.js'
+import { buildIndex, rankSearch } from './search.js';
 
 const perms = JSON.parse(fs.readFileSync(path.join(CONTEXT, 'permissoes.json'), 'utf-8'));
 
-const normalizer = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
+const index = buildIndex(perms, p => `${p.permissao} ${p.modulos} ${p.observacoes} ${p.pista}`);
 
 export function searchPerms({ search = '' }) {
-    const terms = normalizer(search).split(/\s+/).filter(Boolean);
-    if (!terms.length) return 'Informe palavras-chave em "search".';
-
-    const found = perms.filter(p => {
-        const text = normalizer(`${p.permissao} ${p.modulos} ${p.observacoes} ${p.pista}`);
-        return terms.every(t => text.includes(t));
-    });
-
-    if (!found.length) return 'Nenhuma permissão encontrado.';
-
+    const found = rankSearch(index, search);
+    if (!found) return 'Informe palavras-chave em "search".';
+    if (!found.length) return 'Nenhuma permissão encontrada';
     const text = found.slice(0, 10)
         .map(p => {
             const descricao = p.observacoes || p.pista || 'Sem descrição documentada.';
