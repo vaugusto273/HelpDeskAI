@@ -5,20 +5,30 @@ import path from 'path';
 import { CONTEXT, ENV } from './paths.js'
 import { searchParams, toolParam } from './tools/params.js';
 import { searchPerms, toolPerm } from './tools/perms.js';
+import { searchCases, toolCases, contextWithoutCases } from './tools/cases.js';
+import { searchRejections, toolRejection } from './tools/reject.js';
+
 
 dotenv.config({ path: ENV });
 const anthropic = new Anthropic();
 
-const contextVar = fs.readFileSync(path.join(CONTEXT, 'context.md'), 'utf-8');
+const contextVar = contextWithoutCases;
 const instructionVar = fs.readFileSync(path.join(CONTEXT, 'instrucoes.md'), 'utf-8');
 
 const MAX_ROUNDS = 5;
+
+const handlers = {
+    consultar_parametros: searchParams,
+    consultar_permissoes: searchPerms,
+    buscar_casos: searchCases,
+    consultar_rejeicao: searchRejections,
+};
 
 function buildParam(messages) {
     return {
         model: process.env.CLAUDE_MODEL_NAME,
         max_tokens: 8000,
-        tools: [toolParam, toolPerm],
+        tools: [toolParam, toolPerm, toolCases, toolRejection],
         system: [{
             type: "text",
             text: `<knowledgebase>\n${contextVar}\n</knowledgebase>`,
@@ -59,10 +69,6 @@ export async function messageClaude(q) {
             return { response, usage: uses.length === 1 ? uses[0] : uses };
         }
         messages.push({ role: 'assistant', content: message.content });
-        const handlers = {
-            consultar_parametros: searchParams,
-            consultar_permissoes: searchPerms,
-        };
         const results = message.content
             .filter(b => b.type === 'tool_use')
             .map(b => ({
