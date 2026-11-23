@@ -11,6 +11,10 @@ const SYNONYMS = [
     ['cliente', 'consumidor'],
     ['pagar', 'pagamento'],
     ['receber', 'recebimento'],
+    ['computador', 'notebook', 'note', 'maquina', 'pc'],
+    ['minimo', 'minima'],
+    ['requisito', 'configuracao'],
+
 ];
 
 const normalizer = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();

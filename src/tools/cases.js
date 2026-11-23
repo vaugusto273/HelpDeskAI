@@ -3,7 +3,7 @@ import path from 'path';
 import { CONTEXT } from '../paths.js';
 import { buildIndex, rankSearch } from './search.js';
 
-const MARK = `# PARTE 3`;
+const MARK = `# PARTE 4`;
 const md = fs.readFileSync(path.join(CONTEXT, 'context.md'), 'utf-8');
 const start = md.indexOf(MARK);
 if (start < 0) throw new Error(`"${MARK}" não encontrado no context.md`)
@@ -15,12 +15,12 @@ const cases = md.slice(start)
     .slice(1)
     .map(block => {
         const [header, ...other] = block.split('\n');
-        const [id, date, user] = header.split(' . ').map(s => s.trim());
+        const [id, date, user] = header.split(' · ').map(s => s.trim());
         const text = other.join('\n');
         return {
             id,
             date,
-            user: (user ?? '').replace('user: ', ''),
+            user: (user ?? '').replace('público: ', ''),
             problem: text.match(/^Problema: (.*)$/m)?.[1] ?? '',
             solution: text.match(/^Solução registrada: (.*)$/m)?.[1] ?? '',
         };

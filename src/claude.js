@@ -58,6 +58,7 @@ export async function messageClaude(q) {
         role: 'user', content: q
     }]
     const uses = [];
+    const tools = [];
 
     for (let round = 0; round < MAX_ROUNDS; round++) {
         const message = await anthropic.messages.create(buildParam(messages));
@@ -66,22 +67,23 @@ export async function messageClaude(q) {
         if (message.stop_reason !== 'tool_use') {
             const response = message.content
                 .filter(b => b.type === 'text').map(b => b.text).join('\n');
-            return { response, usage: uses.length === 1 ? uses[0] : uses };
+            return { response, usage: uses.length === 1 ? uses[0] : uses, tools };
+
         }
         messages.push({ role: 'assistant', content: message.content });
         const results = message.content
             .filter(b => b.type === 'tool_use')
-            .map(b => ({
-                type: 'tool_result',
-                tool_use_id: b.id,
-                content: handlers[b.name]?.(b.input) ?? `Ferramenta desconhecida: ${b.name}`,
-            }));
+            .map(b => {
+                const content = handlers[b.name]?.(b.input) ?? `Ferramenta desconhecida: ${b.name}`;
+                tools.push({ name: b.name, input: b.input, result: content.slice(0, 200) });
+                return { type: 'tool_result', tool_use_id: b.id, content };
+            });
 
         messages.push({
             role: 'user',
             content: results
         });
-        console.log(results);
+        //console.log(results);
     }
-    return { response: 'Não consegui concluir a consulta.', usage: uses };
+    return { response: 'Não consegui concluir a consulta.', usage: uses, tools };
 }
