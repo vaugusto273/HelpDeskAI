@@ -12,7 +12,7 @@ let successes = 0;
 for (const itens of penTest) {
     console.log(`\n=== ${itens.id} ===`);
 
-    const { response, usage, tools } = await messageClaude(itens.q);
+    const { response, usage, tools, stopReason } = await messageClaude(itens.q);
 
     // Tokens
 
@@ -60,6 +60,7 @@ for (const itens of penTest) {
         if (!okTools) console.log(`   ferramenta: esperava ${itens.tool}, chamou [${toolsCalled.join(', ')}]`);
         if (!okContent) console.log(`   faltou: ${JSON.stringify(missing)}`);
         if (!okNoContent) console.log(`   apareceu proibido: ${JSON.stringify(forbid)}`);
+        console.log(`   parou por: ${stopReason}`);
         console.log(`   resposta: ${response.slice(0, 300).replace(/\n/g, ' ')}...`);
     }
 }

@@ -66,8 +66,15 @@ export async function messageClaude(q) {
 
         if (message.stop_reason !== 'tool_use') {
             const response = message.content
-                .filter(b => b.type === 'text').map(b => b.text).join('\n');
-            return { response, usage: uses.length === 1 ? uses[0] : uses, tools };
+                .filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+            if (!response) console.warn(`Resposta vazia (stop_reason: ${message.stop_reason})`);
+            
+            return {
+                response: response || 'Não consegui responder a essa pergunta. Pode reformular a dúvida ou falar com o suporte?',
+                usage: uses.length === 1 ? uses[0] : uses,
+                tools,
+                stopReason: message.stop_reason,
+            };
 
         }
         messages.push({ role: 'assistant', content: message.content });
@@ -85,5 +92,5 @@ export async function messageClaude(q) {
         });
         //console.log(results);
     }
-    return { response: 'Não consegui concluir a consulta.', usage: uses, tools };
+    return { response: 'Não consegui concluir a consulta.', usage: uses, tools, stopReason: 'max_rounds' };
 }
