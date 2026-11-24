@@ -45,13 +45,20 @@ export function rankSearch(index, query) {
     const terms = [...new Set(tokenize(query))];
     if (!terms.length) return null;
 
+    const has = (tokens, t) => variants(t).some(v => tokens.has(v));
+
+    const weight = Object.fromEntries(terms.map(t => {
+        const df = index.filter(({ tokens }) => has(tokens, t)).length;
+        return [t, Math.log((index.length + 1) / (df + 1))];
+    }));
+
     const min = Math.ceil(terms.length / 2);
     return index
-        .map(({ item, tokens }) => ({
-            item,
-            score: terms.filter(t => variants(t).some(v => tokens.has(v))).length,
-        }))
-        .filter(r => r.score >= min)
+        .map(({ item, tokens }) => {
+            const hits = terms.filter(t => has(tokens, t));
+            return { item, hits: hits.length, score: hits.reduce((s, t) => s + weight[t], 0) };
+        })
+        .filter(r => r.hits >= min)
         .sort((a, b) => b.score - a.score)
         .map(r => r.item);
 }
