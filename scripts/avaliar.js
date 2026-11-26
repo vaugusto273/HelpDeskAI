@@ -5,14 +5,19 @@ import { messageClaude } from '../src/claude.js';
 
 const penTest = JSON.parse(fs.readFileSync(path.join(RAIZ, 'data', 'eval.json'), 'utf-8'));
 
+const only = process.argv[2];
+const selected = only ? penTest.filter(i => (i.audience ?? 'support') === only) : penTest;
+
 const tokens = { input: 0, cacheRead: 0, cacheWrite: 0, output: 0 };
 
 let successes = 0;
 
-for (const itens of penTest) {
-    console.log(`\n=== ${itens.id} ===`);
+for (const itens of selected) {
 
-    const { response, usage, tools, stopReason } = await messageClaude(itens.q);
+    const audience = itens.audience ?? 'support';
+    console.log(`\n=== ${itens.id} (${audience}) ===`);
+
+    const { response, usage, tools, stopReason } = await messageClaude(itens.q, { audience });
 
     // Tokens
 
@@ -27,7 +32,10 @@ for (const itens of penTest) {
     const toolsCalled = tools.map(t => t.name);
     const rText = response.toLowerCase();
 
-    const textIncludes = p => [].concat(p).some(x => rText.includes(x.toLowerCase()));
+    const matches = x => typeof x === 'object'
+        ? new RegExp(x.re, 'i').test(response)
+        : rText.includes(x.toLowerCase()); 
+    const textIncludes = p => [].concat(p).some(matches);
 
     // Tools
 
@@ -65,5 +73,5 @@ for (const itens of penTest) {
     }
 }
 
-console.log(`\n${successes} de ${penTest.length} passaram`);
+console.log(`\n${successes} de ${selected.length} passaram`);
 console.log(`Tokens: ${tokens.input} entrada, ${tokens.cacheRead} cache lido, ${tokens.cacheWrite} cache gravado, ${tokens.output} saída`);

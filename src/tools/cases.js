@@ -25,16 +25,24 @@ const cases = md.slice(start)
             solution: text.match(/^Solução registrada: (.*)$/m)?.[1] ?? '',
         };
     });
-const index = buildIndex(cases, c => `${c.problem} ${c.solution}`);
+const forClient = cases.filter(c => c.user !== 'somente técnico');
 
-export function searchCases({ search = '' }) {
-    const found = rankSearch(index, search);
+const INDEXES = {
+    client: buildIndex(forClient, c => `${c.problem} ${c.solution}`),
+    support: buildIndex(cases, c => `${c.problem} ${c.solution}`),
+};
+
+const FORMAT = {
+    client: c => `Problema: ${c.problem}\nSolução registrada: ${c.solution}`,
+    support: c => `Caso ${c.id} · ${c.date} · público: ${c.user}\nProblema: ${c.problem}\nSolução registrada: ${c.solution}`,
+};
+
+export function searchCases({ search = '' }, audience = 'support') {
+    const found = rankSearch(INDEXES[audience], search);
     if (!found) return 'Informe palavras-chave em "search".';
     if (!found.length) return 'Nenhum caso encontrado';
 
-    const text = found.slice(0, 5)
-        .map(c => `Caso ${c.id} · ${c.date} · público: ${c.user}\nProblema: ${c.problem}\nSolução registrada: ${c.solution}`)
-        .join('\n\n');
+    const text = found.slice(0, 5).map(FORMAT[audience]).join('\n\n');
     return found.length > 5 ? `${text}\n\n(+${found.length - 5} casos; refine a busca)` : text;
 }
 
